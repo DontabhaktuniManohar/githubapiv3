@@ -8,4 +8,13 @@ def filtered_branches (dict_final_branch):
             filtered_branch[branch] = dict_final_branch[branch]
     return filtered_branch
 
-print (filtered_branches(final_branches))
+final_branch = (filtered_branches(final_branches))
+print (final_branch)
+github_api_repo_url = "https://git01.pfsfhq.com/api/v3/repos/ISApps/"
+for i in final_branch.keys():
+    urlinfo = i.split('/',1)
+    project_name = urlinfo[1]
+    branch_name = urlinfo[1]
+    print (github_api_repo_url+"/"+project_name+"/git/refs/heads/"+branch_name)
+
+
