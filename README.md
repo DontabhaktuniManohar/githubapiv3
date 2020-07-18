@@ -11,3 +11,15 @@ The head branch is what you're merging into the base.
 head.label is fidelski:add-obvious-autotools-files, meaning it's the add-obvious-autotools-files branch for fidelski/gitignore.
 head.ref is the branch name add-obvious-autotools-files.
 head.sha is the current SHA of that branch..
+
+```
+https://api.github.com/users/DontabhaktuniManohar/repos
+https://api.github.com/repos/DontabhaktuniManohar/docker/pulls/1
+
+https://api.github.com/repos/DontabhaktuniManohar/docker/pulls?state=open
+
+https://api.github.com/repos/DontabhaktuniManohar/docker/pulls?state=closed
+
+https://api.github.com/repos/DontabhaktuniManohar/docker/pulls?state=all
+
+```
