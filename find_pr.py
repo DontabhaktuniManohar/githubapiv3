@@ -89,7 +89,7 @@ def get_pullrequest_data (repo_name,proj_names):
                         rep_project_pr_data.append(proj_name+"/"+pull_data['head']['ref'])
             else:
                 print ("No pull request for project "+str(proj_name))
-        return (rep_project_pr_data)
+    return (rep_project_pr_data)
     
 def filtered_branches (dict_final_branch,fin_pull_req_data):
     filtered_branch = {}
