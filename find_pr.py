@@ -84,8 +84,8 @@ def get_pullrequest_data (repo_name,proj_names):
             branch_pull_data =  (ret.json())
             if branch_pull_data:
                 for pull_data in branch_pull_data:
-            print (pull_data['merged_at'])
-            if (pull_data['merged_at'] != None):
+                    print (pull_data['merged_at'])
+                    if (pull_data['merged_at'] != None):
                         rep_project_pr_data.append(proj_name+"/"+pull_data['head']['ref'])
             else:
                 print ("No pull request for project "+str(proj_name))
