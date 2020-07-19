@@ -60,9 +60,6 @@ def last_commit_info(branch_info):
 
 def numOfDays(date1, date2):
         return (date2-date1).days
-
-def DiffList(li1, li2): 
-	return (list(set(li1) - set(li2))) 
   
 def branchduration(br_commit_dt):
     branch_duration = {}
@@ -80,17 +77,18 @@ def get_pullrequest_data (repo_name,proj_names):
     rep_project_pr_data = []
     for proj_name in proj_names:
         rep_name_url = repo_url+repo_name
-        repo_pr_data = rep_name_url +"/"+proj_name+"/pulls?state=all&per_page=60&access_token=aa0d3eb79fcc2b08a4d16a3438d6e3715cccafd1"
-        print (repo_pr_data)
-        ret = requests.get(repo_pr_data,verify=False)
-        branch_pull_data =  (ret.json())
-        if branch_pull_data:
-            for pull_data in branch_pull_data:
-		print (pull_data['merged_at'])
-		if (pull_data['merged_at'] != None):
-                    rep_project_pr_data.append(proj_name+"/"+pull_data['head']['ref'])
-        else:
-            print ("No pull request for project "+str(proj_name))
+        for page in range (1,15):
+            repo_pr_data = rep_name_url +"/"+proj_name+"/pulls?state=all&per_page=60&access_token=aa0d3eb79fcc2b08a4d16a3438d6e3715cccafd1"
+            print (repo_pr_data)
+            ret = requests.get(repo_pr_data,verify=False)
+            branch_pull_data =  (ret.json())
+            if branch_pull_data:
+                for pull_data in branch_pull_data:
+            print (pull_data['merged_at'])
+            if (pull_data['merged_at'] != None):
+                        rep_project_pr_data.append(proj_name+"/"+pull_data['head']['ref'])
+            else:
+                print ("No pull request for project "+str(proj_name))
     return (rep_project_pr_data)
     
 def filtered_branches (dict_final_branch,fin_pull_req_data):
