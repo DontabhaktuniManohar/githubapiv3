@@ -80,7 +80,7 @@ def get_pullrequest_data (repo_name,proj_names):
     rep_project_pr_data = []
     for proj_name in proj_names:
         rep_name_url = repo_url+repo_name
-        repo_pr_data = rep_name_url +"/"+proj_name+"/pulls?state=all"
+        repo_pr_data = rep_name_url +"/"+proj_name+"/pulls?state=all&per_page=60&access_token=aa0d3eb79fcc2b08a4d16a3438d6e3715cccafd1",verify=False)"
         print (repo_pr_data)
         ret = requests.get(repo_pr_data)
         branch_pull_data =  (ret.json())
