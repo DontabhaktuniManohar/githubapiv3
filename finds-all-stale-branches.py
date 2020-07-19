@@ -1,6 +1,3 @@
-#Author Name: Ramesh Bandavaram 
-#Date: 15-Apr-2020
-    
 import requests
 import json
 import argparse
