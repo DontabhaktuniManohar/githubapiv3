@@ -137,7 +137,11 @@ def main(argv):
     print branch_commit_info_latest
     filtered_branchduration=branchduration(branch_commit_info_latest)
     pull_request_data = get_pullrequest_data(repo_name,project_name)
+    print ("::::pull_request_data:::::")
+    print (pull_request_data)
     final_pull_request_data = Diff(list(final_branch.keys()), filtered_branchduration)
+    print ("::::final_pull_request_data:::::")
+    print (final_pull_request_data)
     final_branch = (filtered_branches(filtered_branchduration,final_pull_request_data))
     print (final_branch)
     deletebranch(repo_name,final_branch)
