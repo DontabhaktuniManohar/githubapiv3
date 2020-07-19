@@ -1,6 +1,4 @@
-#Author Name: Ramesh Bandavaram 
-#Date: 15-Apr-2020
-    
+
 import requests
 import json
 import argparse
@@ -100,7 +98,8 @@ def deletebranch(repo_name,final_branch):
         branch_name = urlinfo[1]
         delete_url = (github_api_repo_url+"/"+project_name+"/git/refs/heads/"+branch_name)
         content_str = repo_name+","+project_name+","+branch_name+","+str(days)
-        write_to_file(content_str)
+        if (days < -21):
+            write_to_file(content_str)
         delete_urllist[delete_url]=days
     print (delete_urllist)
 
