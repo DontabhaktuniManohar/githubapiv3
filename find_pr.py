@@ -86,7 +86,9 @@ def get_pullrequest_data (repo_name,proj_names):
         branch_pull_data =  (ret.json())
         if branch_pull_data:
             for pull_data in branch_pull_data:
-                rep_project_pr_data.append(proj_name+"/"+pull_data['head']['ref'])
+		print (pull_data['merged_at'])
+		if (pull_data['merged_at'] != None):
+                    rep_project_pr_data.append(proj_name+"/"+pull_data['head']['ref'])
         else:
             print ("No pull request for project "+str(proj_name))
     return (rep_project_pr_data)
@@ -139,10 +141,7 @@ def main(argv):
     pull_request_data = get_pullrequest_data(repo_name,project_name)
     print ("::::pull_request_data:::::")
     print (pull_request_data)
-    final_pull_request_data = Diff(list(final_branch.keys()), filtered_branchduration)
-    print ("::::final_pull_request_data:::::")
-    print (final_pull_request_data)
-    final_branch = (filtered_branches(filtered_branchduration,final_pull_request_data))
+    final_branch = (filtered_branches(filtered_branchduration,pull_request_data))
     print (final_branch)
     deletebranch(repo_name,final_branch)
     csvtoHTML.html_codeToHTML("stalebrancheslist.csv","reportfile.html")
