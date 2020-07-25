@@ -48,6 +48,7 @@ def getbranchnames(repo_name,project_list):
                 branch_info[project_branch]=branch['commit']['url']
     return branch_info
 
+
 def last_commit_info(branch_info):
     br_commit_dt = {}
     for branch,commit_url in branch_info.items():
@@ -131,7 +132,15 @@ def main(argv):
     final_branch = (filtered_branches(filtered_branchduration))
     print (final_branch)
     deletebranch(repo_name,final_branch)
-    csvtoHTML.html_codeToHTML("squashesbrancheslist.csv","reportfile.html")
+    exists = os.path.isfile('squashesbrancheslist.csv')
+    if exists:
+        os.remove("reportfile.html")
+        csvtoHTML.html_codeToHTML("squashesbrancheslist.csv","reportfile.html")
+    else:
+        print ("No branches has to delete , since no report was generated")
+        
+    
+    
 
 if __name__ == '__main__':
     print "sys.argv=%s" % (sys.argv)
