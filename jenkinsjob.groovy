@@ -30,3 +30,23 @@ pipeline {
         }
     }
 }
+
+
+def jenkinsUrl = 'http://your-jenkins-url'
+def jobName = 'YourJobName'
+
+def configXml
+
+// Make HTTP GET request to retrieve the job configuration XML
+def url = "${jenkinsUrl}/job/${jobName}/config.xml"
+def connection = url.toURL().openConnection()
+connection.setRequestMethod('GET')
+
+try {
+    configXml = connection.inputStream.text
+} finally {
+    connection.inputStream.close()
+}
+
+// Process the config.xml content as needed
+println "Config XML content for job $jobName:\n$configXml"
