@@ -1,52 +1,38 @@
-pipeline {
-    agent any
+import requests
+from requests.auth import HTTPBasicAuth
 
-    stages {
-        stage('Extract Users List') {
-            steps {
-                script {
-                    def jobName = 'YourJobName'
-                    def configFile = readFile("${JENKINS_HOME}/jobs/${jobName}/config.xml")
+def get_users_list(jenkins_url, job_name, username, api_token):
+    # Jenkins job config.xml API endpoint
+    config_xml_url = f"{jenkins_url}/job/{job_name}/config.xml"
 
-                    // Parse the config.xml content
-                    def configXml = new XmlSlurper().parseText(configFile)
+    # Make a GET request to the config.xml endpoint
+    response = requests.get(config_xml_url, auth=HTTPBasicAuth(username, api_token))
 
-                    // Extract user names
-                    def userNames = []
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Extract user information from the XML response
+        users = []
+        for line in response.text.split('\n'):
+            if 'authenticated' in line:
+                user = line.split()[2].strip()
+                users.append(user)
+        return users
+    else:
+        # Print error message if request failed
+        print(f"Failed to retrieve job configuration. Status code: {response.status_code}")
+        return None
 
-                    // Assuming users are defined in the <authorizationMatrix> section
-                    configXml.authorizationMatrix.each { permission ->
-                        if (permission["@class"] == 'hudson.security.ProjectMatrixAuthorizationStrategy$ProjectMatrixEntry') {
-                            // Extract user names from permission definitions
-                            permission.user.each { user ->
-                                userNames.add(user.text())
-                            }
-                        }
-                    }
+# Jenkins server details
+jenkins_url = 'http://your-jenkins-url'
+username = 'your_username'
+api_token = 'your_api_token'
 
-                    println "User names in $jobName job configuration: $userNames"
-                }
-            }
-        }
-    }
-}
+# Jenkins job details
+job_name = 'YourJobName'
 
-
-def jenkinsUrl = 'http://your-jenkins-url'
-def jobName = 'YourJobName'
-
-def configXml
-
-// Make HTTP GET request to retrieve the job configuration XML
-def url = "${jenkinsUrl}/job/${jobName}/config.xml"
-def connection = url.toURL().openConnection()
-connection.setRequestMethod('GET')
-
-try {
-    configXml = connection.inputStream.text
-} finally {
-    connection.inputStream.close()
-}
-
-// Process the config.xml content as needed
-println "Config XML content for job $jobName:\n$configXml"
+# Retrieve users list from Jenkins job configuration
+users_list = get_users_list(jenkins_url, job_name, username, api_token)
+if users_list:
+    print(f"Users who accessed the job '{job_name}': {users_list}")
+else:
+    print("Failed to retrieve users list.")
