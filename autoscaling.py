@@ -30,3 +30,46 @@ asg_name = 'your_asg_name'
 region_name = 'your_region_name'
 instance_ips = get_instance_ips_from_asg(asg_name, region_name)
 print("Instance IP addresses:", instance_ips)
+
+
+
+#---
+import boto3
+
+def get_target_group_health(target_group_arn, region_name):
+    """
+    Get information about the health of targets registered with the specified target group.
+
+    :param target_group_arn: ARN of the target group.
+    :param region_name: AWS region name where the target group exists.
+    :return: Dictionary containing information about healthy and unhealthy targets.
+    """
+    elbv2_client = boto3.client('elbv2', region_name=region_name)
+
+    # Get target health information
+    response = elbv2_client.describe_target_health(TargetGroupArn=target_group_arn)
+
+    healthy_targets = []
+    unhealthy_targets = []
+
+    # Process target health information
+    for target_health in response['TargetHealthDescriptions']:
+        target_id = target_health['Target']['Id']
+        target_health_state = target_health['TargetHealth']['State']
+
+        if target_health_state == 'healthy':
+            healthy_targets.append(target_id)
+        else:
+            unhealthy_targets.append(target_id)
+
+    return {
+        'healthy': healthy_targets,
+        'unhealthy': unhealthy_targets
+    }
+
+# Example usage:
+target_group_arn = 'your_target_group_arn'
+region_name = 'your_region_name'
+target_health_info = get_target_group_health(target_group_arn, region_name)
+print("Healthy targets:", target_health_info['healthy'])
+print("Unhealthy targets:", target_health_info['unhealthy'])
