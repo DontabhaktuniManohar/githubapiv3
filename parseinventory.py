@@ -53,3 +53,39 @@ group_name = "ABCD"  # Change this to test with different groups
 # Get and display the group details
 group_details = get_group_details(inventory_data, group_name)
 print(group_details)
+
+
+
+
+---
+- name: Handle hostname based on ASG_METHOD
+  hosts: localhost
+  gather_facts: no
+  vars:
+    asg_method: "yes"  # Change to "no" to test
+  tasks:
+    - name: Register hostname for ASG_METHOD=no
+      command: hostname
+      register: hostname_output_no
+      when: asg_method == "no"
+
+    - name: Register hostname for ASG_METHOD=yes
+      command: hostname -i
+      register: hostname_output_yes
+      when: asg_method == "yes"
+
+    - name: Set fact based on hostname_output
+      set_fact:
+        my_variable: >-
+          {% if asg_method == "no" %}
+            {{ hostname_output_no.stdout }}
+          {% elif asg_method == "yes" %}
+            {{ hostname_output_yes.stdout }}
+          {% else %}
+            Undefined
+          {% endif %}
+
+    - name: Debug the variable
+      debug:
+        msg: "The value of my_variable is: {{ my_variable }}"
+
