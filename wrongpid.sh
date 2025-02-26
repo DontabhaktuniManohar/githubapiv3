@@ -37,6 +37,12 @@ for PID in "${WRONG_PIDS[@]}"; do
     fi
 done
 
+# Display missing ports
+if [[ ${#MISSING_PORTS[@]} -gt 0 ]]; then
+    echo "Missing ports: ${MISSING_PORTS[*]}"
+fi
+
+
 # Start JVMs
 echo "Starting JVMs..."
 # Update the command below to match your JVM startup script or command
