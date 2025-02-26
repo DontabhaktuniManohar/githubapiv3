@@ -17,9 +17,10 @@ for PORT in "${ALLOWED_PORTS[@]}"; do
     NETSTAT_PID=$(netstat -anp | grep "$PORT" | awk '{print $7}' | cut -d'/' -f1)
     
     # Compare PIDs
-    if [[ "$PS_PID" != "$NETSTAT_PID" ]]; then
-        echo "Mismatch detected for port $PORT: ps PID=$PS_PID, netstat PID=$NETSTAT_PID"
-        WRONG_PIDS+=("$PS_PID" "$NETSTAT_PID")
+    if [[ -z "$PS_PID" || -z "$NETSTAT_PID" || "$PS_PID" != "$NETSTAT_PID" ]]; then
+        echo "Mismatch or missing PID detected for port $PORT: ps PID=$PS_PID, netstat PID=$NETSTAT_PID"
+        [[ -n "$PS_PID" ]] && WRONG_PIDS+=("$PS_PID")
+        [[ -n "$NETSTAT_PID" ]] && WRONG_PIDS+=("$NETSTAT_PID")
     fi
 done
 
