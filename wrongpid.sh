@@ -9,12 +9,17 @@ RUNNING_PORTS=$(netstat -anp | grep LISTEN | awk '{print $4}' | awk -F: '{print 
 # Store incorrect PIDs
 WRONG_PIDS=()
 
-# Iterate over running ports
-for PORT in $RUNNING_PORTS; do
-    PID=$(ps -ef | grep "$PORT" | grep -v grep | awk '{print $2}')
-    if [[ ! " ${ALLOWED_PORTS[@]} " =~ " ${PORT} " ]]; then
-        echo "Port $PORT is not allowed. Process ID: $PID"
-        WRONG_PIDS+=("$PID")
+# Iterate over allowed ports
+for PORT in "${ALLOWED_PORTS[@]}"; do
+    # Get PID from ps command
+    PS_PID=$(ps -ef | grep "$PORT" | grep LISTEN | awk '{print $2}')
+    # Get PID from netstat command
+    NETSTAT_PID=$(netstat -anp | grep "$PORT" | awk '{print $7}' | cut -d'/' -f1)
+    
+    # Compare PIDs
+    if [[ "$PS_PID" != "$NETSTAT_PID" ]]; then
+        echo "Mismatch detected for port $PORT: ps PID=$PS_PID, netstat PID=$NETSTAT_PID"
+        WRONG_PIDS+=("$PS_PID" "$NETSTAT_PID")
     fi
 done
 
