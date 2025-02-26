@@ -1,16 +1,20 @@
 #!/bin/bash
 
 # Define allowed ports
-ALLOWED_PORTS=(8080 9090 7070)
-
-# Get list of running ports and associated PIDs
-RUNNING_PORTS=$(netstat -anp | grep LISTEN | awk '{print $4}' | awk -F: '{print $2}')
-
+declare -A PORT_SCRIPTS
+PORT_SCRIPTS=(
+    [8080]="/path/to/script_8080.sh"
+    [9090]="/path/to/script_9090.sh"
+    [7070]="/path/to/script_7070.sh"
+)
 # Store incorrect PIDs
 WRONG_PIDS=()
+# Store missing ports
+MISSING_PORTS=()
+
 
 # Iterate over allowed ports
-for PORT in "${ALLOWED_PORTS[@]}"; do
+for PORT in "${!PORT_SCRIPTS[@]}"; do
     # Get PID from ps command
     PS_PID=$(ps -ef | grep "$PORT" | grep LISTEN | awk '{print $2}')
     # Get PID from netstat command
@@ -42,6 +46,15 @@ if [[ ${#MISSING_PORTS[@]} -gt 0 ]]; then
     echo "Missing ports: ${MISSING_PORTS[*]}"
 fi
 
+# Start JVMs using corresponding scripts
+for PORT in "${MISSING_PORTS[@]}"; do
+    if [[ -n "${PORT_SCRIPTS[$PORT]}" ]]; then
+        echo "Starting service for port $PORT using script ${PORT_SCRIPTS[$PORT]}"
+        nohup bash "${PORT_SCRIPTS[$PORT]}" &
+    else
+        echo "No startup script defined for port $PORT"
+    fi
+done
 
 # Start JVMs
 echo "Starting JVMs..."
