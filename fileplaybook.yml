@@ -1,5 +1,5 @@
 ---
-- name: Collect and Print File Information from Multiple Servers
+- name: Collect and Send File Information to Nexus Artifactory
   hosts: all
   gather_facts: no
   tasks:
@@ -19,25 +19,32 @@
           permissions: "{{ file_info.stat.mode | default('N/A') }}"
           last_modified: "{{ file_info.stat.mtime | default('N/A') }}"
 
-    - name: Print file details for each server
-      debug:
-        msg: "File Info for {{ inventory_hostname }} -> Exists: {{ file_info.stat.exists }}, Size: {{ file_info.stat.size | default('N/A') }}, Permissions: {{ file_info.stat.mode | default('N/A') }}, Last Modified: {{ file_info.stat.mtime | default('N/A') }}"
+- name: Consolidate and Send Data to Nexus Artifactory
+  hosts: localhost
+  gather_facts: no
+  tasks:
 
-    - name: Aggregate file information across all servers
+    - name: Merge collected data from all servers
       set_fact:
-        all_files_info: "{{ all_files_info | default([]) + [file_data] }}"
-      run_once: true
-      delegate_to: localhost
+        all_files_info: "{{ hostvars.values() | map(attribute='file_data') | list }}"
 
-    - name: Print consolidated file information
+    - name: Generate CSV content dynamically
+      set_fact:
+        csv_content: |
+          hostname,path,exists,size,permissions,last_modified
+          {% for item in all_files_info %}
+          {{ item.hostname }},{{ item.path }},{{ item.exists }},{{ item.size }},{{ item.permissions }},{{ item.last_modified }}
+          {% endfor %}
+
+    - name: Post CSV data directly to Nexus Artifactory
+      command: >
+        curl -X PUT -u nexus_user:nexus_password
+        -H "Content-Type: text/csv"
+        --data-binary @- "http://nexus.example.com/repository/raw-repo/file_info.csv"
+      args:
+        stdin: "{{ csv_content | trim }}"
+      register: curl_response
+
+    - name: Print Nexus API Response
       debug:
-        var: all_files_info
-      run_once: true
-      delegate_to: localhost
-
-    - name: Save consolidated data to a final report
-      copy:
-        content: "{{ all_files_info | to_json(indent=2) }}"
-        dest: "/tmp/consolidated_file_info.json"
-      run_once: true
-      delegate_to: localhost
+        var: curl_response.stdout
