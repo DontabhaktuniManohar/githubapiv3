@@ -1,0 +1,43 @@
+---
+- name: Collect and Print File Information from Multiple Servers
+  hosts: all
+  gather_facts: no
+  tasks:
+
+    - name: Get file details
+      stat:
+        path: "/path/to/file"  # Change this to the actual file path
+      register: file_info
+
+    - name: Store file details in a variable
+      set_fact:
+        file_data: 
+          hostname: "{{ inventory_hostname }}"
+          path: "/path/to/file"
+          exists: "{{ file_info.stat.exists }}"
+          size: "{{ file_info.stat.size | default('N/A') }}"
+          permissions: "{{ file_info.stat.mode | default('N/A') }}"
+          last_modified: "{{ file_info.stat.mtime | default('N/A') }}"
+
+    - name: Print file details for each server
+      debug:
+        msg: "File Info for {{ inventory_hostname }} -> Exists: {{ file_info.stat.exists }}, Size: {{ file_info.stat.size | default('N/A') }}, Permissions: {{ file_info.stat.mode | default('N/A') }}, Last Modified: {{ file_info.stat.mtime | default('N/A') }}"
+
+    - name: Aggregate file information across all servers
+      set_fact:
+        all_files_info: "{{ all_files_info | default([]) + [file_data] }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Print consolidated file information
+      debug:
+        var: all_files_info
+      run_once: true
+      delegate_to: localhost
+
+    - name: Save consolidated data to a final report
+      copy:
+        content: "{{ all_files_info | to_json(indent=2) }}"
+        dest: "/tmp/consolidated_file_info.json"
+      run_once: true
+      delegate_to: localhost
