@@ -1,7 +1,106 @@
-I hope you're doing well.
+Subject: New Script to Resolve JVM Startup Issues Due to Port Conflicts
 
-I would like to request leave from [start date] to [end date] to manage my Gruhapravesh ceremony. This event requires my full attention and presence, and I want to ensure everything goes smoothly.
+Dear Team,
 
-I have made arrangements to complete my pending tasks before my leave and have briefed [colleague's name] to handle any urgent matters in my absence. I'll also be reachable via phone or email if needed.
+We are currently experiencing issues with the startup of JVMs for Applications A and B, which are running on the same servers. Specifically, during the startup of the A application’s JVMs, we have encountered shutdowns due to port conflicts — in other words, the ports required by the JVMs are already being used by another process.
 
-Thank you for considering my request. I'll make sure to return to work refreshed and ready to resume my responsibilities.
+The Manual Process
+Previously, when we encountered this issue, we followed a series of manual steps to resolve the conflict. These steps were both time-consuming and error-prone, as they involved logging into the server and manually troubleshooting each instance of port conflicts. Below is a brief overview of the manual steps:
+
+Identify the affected servers: We would first identify the server IPs where the JVMs had failed using the health check job.
+Log in to the server: After identifying the server, we would log in to investigate further.
+Check if the JVM is down: We would use the ps -ef | grep JVM/port command to confirm if the JVMs had stopped.
+Identify conflicting processes: The netstat -anp | grep port command was used to find out which other JVM was using the conflicting port.
+Kill the conflicting JVM: Once identified, we would kill the conflicting process and restart the required JVMs.
+These steps, though effective, were cumbersome and time-intensive, especially when the issue occurred on multiple servers.
+
+The Automated Solution
+To address this problem, we have developed a script that automates the entire troubleshooting and resolution process. The script will efficiently handle the steps mentioned above and allow us to quickly recover from port conflicts.
+
+Here’s a breakdown of how the script works:
+
+Define allowed ports and scripts: We first define a list of allowed ports and corresponding startup scripts for each port.
+
+bash
+Copy
+declare -A PORT_SCRIPTS
+PORT_SCRIPTS=(
+    [8080]="/path/to/script_8080.sh"
+    [9090]="/path/to/script_9090.sh"
+    [7070]="/path/to/script_7070.sh"
+)
+Check for port conflicts: The script checks if the required ports are already being used. It does this by comparing the PIDs (Process IDs) from the ps command and the netstat command for each port.
+
+If no process is found using the port, it flags that port as missing.
+If there is a mismatch between the PIDs, it adds the incorrect PIDs to a list for termination.
+bash
+Copy
+PS_PID=$(ps -ef | grep "$PORT" | grep LISTEN | awk '{print $2}')
+NETSTAT_PID=$(netstat -anp | grep "$PORT" | awk '{print $7}' | cut -d'/' -f1)
+Kill incorrect PIDs: Once mismatched or incorrect PIDs are identified, the script kills the conflicting processes.
+
+bash
+Copy
+for PID in "${WRONG_PIDS[@]}"; do
+    if [[ -n "$PID" ]]; then
+        kill -9 "$PID"
+    fi
+done
+Start the JVMs: After clearing the conflicts, the script proceeds to start the necessary JVMs using the predefined startup scripts.
+
+bash
+Copy
+for PORT in "${MISSING_PORTS[@]}"; do
+    if [[ -n "${PORT_SCRIPTS[$PORT]}" ]]; then
+        nohup bash "${PORT_SCRIPTS[$PORT]}" &
+    fi
+done
+Final JVM Start: Finally, the script will start the JVMs and verify that everything is running as expected.
+
+bash
+Copy
+nohup java -jar /path/to/your/application.jar &
+Benefits of the Script
+Time-saving: The script automates the entire troubleshooting process, reducing the time spent on manually identifying and fixing port conflicts.
+Efficiency: The script checks all relevant ports, kills conflicting processes, and restarts the necessary JVMs automatically.
+Verification: At the end of the process, the script displays the JVM status for verification, ensuring that everything is up and running.
+How to Use
+The script can be executed across all the servers where the JVM startup issue occurs. If there are no conflicts, the script will not make any changes. If there are conflicts, it will take care of killing the conflicting processes and starting the JVMs.
+
+Please let me know if you have any questions or need further clarification on how this works. We hope this will significantly improve our ability to resolve port conflicts quickly and efficiently.
+
+Best regards,
+[Your Name]
+[Your Position]
+
+
+Subject: JVM Startup Issue - New Script for Handling Port Conflicts
+
+Dear Team,
+
+We are currently facing an issue when starting the JVMs for Applications A and B, which are running on the same servers. Specifically, during the startup of the A application’s JVMs, we are encountering shutdowns due to port conflicts. This means that a port is already in use by another JVM.
+
+Previously, we followed these manual steps to resolve the issue, which took a considerable amount of time:
+
+Identify the server IPs where the JVMs are down through the health check job.
+Log in to the server.
+Run ps -ef | grep JVM/port to confirm whether the JVM is actually down.
+Run netstat -anp | grep port to identify which JVM is using the conflicting port.
+Kill the PID from Step 4 and restart the JVM on the relevant ports from Steps 3 and 4.
+To overcome this challenge and reduce the time spent on these manual steps, we have developed a script that automates the process. This script takes into account all the possible errors and manual steps outlined above.
+
+Here’s how the script works:
+
+It will be run across all servers.
+If the JVMs are running without issues, the script won’t make any changes.
+If there are port conflicts, the script will:
+Kill the conflicting JVM processes.
+Start the affected JVMs individually with a 20-second delay between each.
+After executing, the script will display the JVM's grep information for verification.
+This should significantly reduce the time spent troubleshooting and improve the overall efficiency of resolving port conflicts.
+
+Feel free to reach out if you have any questions or need further clarification.
+
+Best regards,
+[Your Name]
+[Your Position]
